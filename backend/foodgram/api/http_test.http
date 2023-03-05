@@ -1,0 +1,188 @@
+@host = http://localhost:8000
+
+@token = Token ca9b21ce872941546c64ed9b8736789bd12c4811
+
+
+# TAGS
+
+
+### list of tags
+
+GET {{ host }}/api/tags/ HTTP/1.1
+content-type: application/json
+
+### tag detail
+
+GET {{ host }}/api/tags/2/ HTTP/1.1
+content-type: application/json
+
+
+# INGREDIENTS
+
+
+### list of ingredients
+
+GET {{ host }}/api/ingredients/ HTTP/1.1
+content-type: application/json
+
+### ingredient detail
+
+GET {{ host }}/api/ingredients/279/ HTTP/1.1
+content-type: application/json
+
+
+# USERS
+
+
+### list of all users
+
+GET {{host}}/api/users/ HTTP/1.1
+content-type: application/json
+Authorization: {{ token }}
+
+
+### superuser login
+POST {{host}}/api/auth/token/login/ HTTP/1.1
+content-type: application/json
+
+{
+    "username": "ro",
+    "password": "automata"
+}
+
+###
+
+
+# RECIPIES
+
+
+### recipies list/detail
+
+GET {{ host }}/api/recipies/1/ HTTP/1.1
+content-type: application/json
+
+### recipies post
+
+POST  {{ host }}/api/recipies/ HTTP/1.1
+content-type: application/json
+{
+    "name": "pie 2",
+    "text": "some recipie description",
+    "author": 2,
+    "tags": [1, 3],
+    "ingredients": [[1, 23],],
+    "cooking_time": 43
+    # "image":    
+}
+### ingredient detail
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###
+POST {{host}}users/set_password/ HTTP/1.1
+content-type: application/json
+Authorization: {{ token }}
+
+{ 
+  "new_password": "it_works",
+  "current_password": "it_works_again"
+}
+###
+
+###
+POST {{host}}auth/token/logout/ HTTP/1.1
+content-type: application/json
+Authorization: {{ token }}
+
+{
+  "username": "maria",
+  "password": "t3DwwT#hnh8"
+}
+
+###
+POST {{host}}auth/users/ HTTP/1.1
+content-type: application/json
+
+{
+  "username": "maria",
+  "password": "t3DwwT#hnh8",
+  "email": "some@mail.gav"
+}
+###
+
+POST {{host}}auth/token/login/ HTTP/1.1
+content-type: application/json
+
+{
+  "username": "maria",
+  "password": "it_works_again"
+}
+
+
+
+
+###
+# Get jwt-token
+POST {{host}}auth/jwt/create/ HTTP/1.1
+content-type: application/json
+
+{
+  "username": "max",
+  "password": "auihhoue3p"
+}
+
+###
+{
+  "username": "max",
+  "password": "auihhoue3p"
+}
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY3NDA2NTcxOSwianRpIjoiY2U0YjI5ZWY4YTA0NDg3ZjljZjgzNzc3OGNjMWY5ZTQiLCJ1c2VyX2lkIjozfQ.XuacPA-IBYMyQ_uFvt27ViaXyrcBo6WNKldBY9oEpjs",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0MDY1NzE5LCJqdGkiOiIwNjRiMjVjYmVhMjU0ODk0ODhjMjc5MGRlYzE5NDhlMyIsInVzZXJfaWQiOjN9.km0stUo6GBxpDxf4mi-1VWB4F2CQtyMVBvTWONkGtb4"
+}
+
+###
+{
+  "username": "maria",
+  "password": "autnahunath"
+}
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY3NDA2NTY5MCwianRpIjoiNmQzZWQ1YjJkMTg1NDBhN2JkOTM2YjNkNGRkOWQ2ZjIiLCJ1c2VyX2lkIjoyfQ.ZTlHI1GrfZcopEcu-6JkDmWc1KSCEXriQPw1vMk0DAI",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0MDY1NjkwLCJqdGkiOiJjMWQ5NDIyZjk0YjE0NzE1OWM1MTY1NDg5MmFiOTU2YSIsInVzZXJfaWQiOjJ9.yNIiQ8oLwhFU9120GnKSwrFesz60w47vB-1fq7b48Qs"
+}
+
+###
+{
+  "username": "robert",
+  "password": "t3DwwT#hnh8"
+}
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY3NDA2NTY0NCwianRpIjoiMzM0NmZjM2FlZjMxNGM5ODhmMGI1NGRiNjA1MTk1MWYiLCJ1c2VyX2lkIjoxfQ.j_s3RM0Z6qOuSVah2OTLeSK3DGjLZ0o-cB0r9La-LHE",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0MDY1NjQ0LCJqdGkiOiIyNWI0NzVjN2IxMzY0N2E1YWQ5NjNhN2Y0ZTIyYjQzNSIsInVzZXJfaWQiOjF9.yXxnGbDbk-4l7Bk64eQqlX2bsOA2Ihe63Fl2xoqC63M"
+}
+###
+
+
+
+###
+POST {{ host }}api-token-auth/
+content-type: application/json
+
+{
+  "username": "ignaz",
+  "password": "123"
+}
+
+###
