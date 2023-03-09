@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
-from .models import Tag, Ingredient, Recipie
-from .serializers import TagSerializer, IngredientSerializer, RecipieGetSerializer
+from .models import Tag, Ingredient, Recipe
+from .serializers import TagSerializer, IngredientSerializer, RecipeGetSerializer, RecipePostPatchSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -14,13 +14,21 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
 
 
-class RecipieViewSet(viewsets.ModelViewSet):
-    queryset = Recipie.objects.all()
+class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    serializer_class = RecipieGetSerializer
+    # serializer_class = RecipeGetSerializer
 
-    # def get_serializer_class(self):
-    #     if self.action = 'post':
-    #         serializer_class = RecipiePostSerializer
-    #     ....
+    def perform_create(self, serializer):
+        print(self.request.user)
+        serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RecipeGetSerializer
+        elif self.request.method == 'POST':
+            return RecipePostPatchSerializer
+          
+        
+        

@@ -1,6 +1,6 @@
 @host = http://localhost:8000
 
-@token = Token ca9b21ce872941546c64ed9b8736789bd12c4811
+@token = Token ef571e19d055b468484a9fbbfd620e08c700f452
 
 
 # TAGS
@@ -53,30 +53,59 @@ content-type: application/json
 ###
 
 
-# RECIPIES
+# RECIPES
 
 
-### recipies list/detail
+### recipes list/detail
 
-GET {{ host }}/api/recipies/1/ HTTP/1.1
+GET {{ host }}/api/recipes/ HTTP/1.1
 content-type: application/json
 
-### recipies post
-
-POST  {{ host }}/api/recipies/ HTTP/1.1
+### recipes post
+POST {{ host }}/api/recipes/ HTTP/1.1
 content-type: application/json
+Authorization: {{ token }}
+
 {
-    "name": "pie 2",
-    "text": "some recipie description",
-    "author": 2,
+    "name": "pi",
+    "text": "some recipe description",
+    "ingredients": [[1, 23]],
     "tags": [1, 3],
-    "ingredients": [[1, 23],],
     "cooking_time": 43
-    # "image":    
 }
-### ingredient detail
 
+### recipes post as in redoc:
 
+POST  {{ host }}/api/recipes/ HTTP/1.1
+content-type: application/json
+Authorization: {{ token }}
+
+{
+    "ingredients": [
+      {
+        "id": 25,
+        "amount": 17
+      },
+      {
+        "id": 325,
+        "amount": 17
+      },
+      {
+        "id": 255,
+        "amount": 10
+      },
+      {
+        "id": 2,
+        "amount": 2
+      }
+    ],
+    "tags": [1, 3, 4],
+    "name": "some delicious dish",
+    "text": "ancient recipe from Randomstan",
+    "cooking_time": 4
+}
+
+###
 
 
 

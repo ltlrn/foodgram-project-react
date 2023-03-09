@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import TagViewSet, IngredientViewSet, RecipieViewSet
+from .views import TagViewSet, IngredientViewSet, RecipeViewSet
 
 # from users.views import UserViewSet
 # from .views import CategoryViewSet, GenreViewSet, TitleDetail, TitleList
@@ -10,7 +10,7 @@ from .views import TagViewSet, IngredientViewSet, RecipieViewSet
 router = DefaultRouter()
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
-router.register(r'recipies', RecipieViewSet)
+router.register(r'recipes', RecipeViewSet)
 
 # router_1.register('v1/genres', GenreViewSet)
 # router_1.register("v1/users", UserViewSet)

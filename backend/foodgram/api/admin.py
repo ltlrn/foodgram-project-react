@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import Tag, Ingredient, Recipie, Favorite, IngredientAmount
+from .models import Tag, Ingredient, Recipe, Favorite, IngredientAmount
 
 
 class TagAdmin(admin.ModelAdmin):
     pass
 
-class RecipieAdmin(admin.ModelAdmin):
+class RecipeAdmin(admin.ModelAdmin):
     # readonly_fields = ('created',) # read about!
     list_display = [
         "name",
@@ -27,6 +27,6 @@ class RecipieAdmin(admin.ModelAdmin):
 
 admin.site.register(Tag)
 admin.site.register(Ingredient)
-admin.site.register(Recipie, RecipieAdmin)
+admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Favorite)
 admin.site.register(IngredientAmount)

@@ -46,7 +46,7 @@ class Ingredient(models.Model):
     
 
 
-class Recipie(models.Model):
+class Recipe(models.Model):
     """Модель рецептов."""
 
     name = models.CharField("название", max_length=200)
@@ -54,13 +54,14 @@ class Recipie(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="recipies",
+        related_name="recipes",
         verbose_name="рецепты пользователя",
     )
 
     tags = models.ManyToManyField(
         Tag, 
-        verbose_name="теги"
+        verbose_name="теги",
+        through='RecipeTag'
     )
 
     text = models.TextField("описание")
@@ -75,7 +76,7 @@ class Recipie(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, 
         through='IngredientAmount',
-        through_fields=['recipie', 'ingredient'],
+        through_fields=['recipe', 'ingredient'],
         verbose_name='ингридиенты'
     )
 
@@ -98,11 +99,25 @@ class Recipie(models.Model):
         return self.name
 
 
+class RecipeTag(models.Model):
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE
+    )
+
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE
+    )
+
+
+
 class IngredientAmount(models.Model):
     """Количество ингридиентов."""
 
-    recipie = models.ForeignKey(
-        Recipie,
+    recipe = models.ForeignKey(
+        Recipe,
         on_delete=models.CASCADE,
     )
 
@@ -113,8 +128,8 @@ class IngredientAmount(models.Model):
 class ShoppingCart(models.Model):
     "Модель корзины покупок."
 
-    recipie = models.ForeignKey(
-        Recipie,
+    recipe = models.ForeignKey(
+        Recipe,
         on_delete=models.CASCADE,
         related_name="shopping_cart_presence",
         verbose_name="Рецепт в корзине",
@@ -123,7 +138,7 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="recipie_to_cart",
+        related_name="recipe_to_cart",
         verbose_name="добавил рецепт в корзину",
     )
 
@@ -132,7 +147,7 @@ class Favorite(models.Model):
     "Модель избранного."
 
     recipie = models.ForeignKey(
-        Recipie,
+        Recipe,
         on_delete=models.CASCADE,
         related_name="favorite_presence",
         verbose_name="Рецепт в избранном",
@@ -141,7 +156,7 @@ class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="recipie_to_favorite",
+        related_name="recipe_to_favorite",
         verbose_name="добавил рецепт в избранное",
     )
 
