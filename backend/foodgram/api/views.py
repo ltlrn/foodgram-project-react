@@ -10,12 +10,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import Subscription
 
-from api.permissions import (AdminOrReadOnly, AuthorStaffOrReadOnly,
-                             DjangoModelPermissions)
+from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 
-from .models import (Favorite, Ingredient, IngredientAmount, Recipe,
+from .models import (Favorite, Ingredient, Recipe,
                      ShoppingCart, Tag)
-from .paginators import PageLimitPagination
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeGetSerializer, RecipePostPatchSerializer,
                           RecipeShortSerializer, TagSerializer,
@@ -25,11 +23,14 @@ User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
+    """Вьюсет для пользователей, который наследуется от вьюсета
+    по умолчанию из библиотеки djoser."""
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [
         IsAuthenticated,
     ]
+    paginaton_class = PageNumberPagination
     add_serializer = UserSubscribeSerializer
     http_method_names = ["get", "post", "patch", "delete"]
 
@@ -41,19 +42,15 @@ class CustomUserViewSet(UserViewSet):
         ],
     )
     def subscriptions(self, request):
-        print("i am here!")
+        """Возвращает все подписки текущего пользователя, если такие
+        есть."""
         if self.request.user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        users = User.objects.filter(subscribing__user=1)
-
-        # pages = self.paginate_queryset(
-        #     User.objects.filter(subscribing__user=request.user)
-        # )
+        users = User.objects.filter(subscribing__user=request.user)
 
         serializer = UserSubscribeSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        #  return self.get_paginated_response(serializer.data)
 
     @action(
         methods=["POST", "DELETE"],
@@ -63,6 +60,8 @@ class CustomUserViewSet(UserViewSet):
         ],
     )
     def subscribe(self, request, id):
+        """Механизм подписки на автора рецепта и отписки
+        от него."""
         author = get_object_or_404(self.queryset, id=id)
         serializer = self.add_serializer(author)
         subscription = Subscription.objects.filter(
@@ -80,10 +79,11 @@ class CustomUserViewSet(UserViewSet):
 
         return Response(
             status=status.HTTP_400_BAD_REQUEST
-        )  # may be return some error msg
+        )
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [
@@ -92,6 +92,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = PageNumberPagination
@@ -107,6 +108,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет для рецептов."""
     queryset = Recipe.objects.all()
     http_method_names = ["get", "post", "patch", "delete"]
     permission_classes = (AuthorStaffOrReadOnly,)
@@ -121,6 +123,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     add_serializer = RecipeShortSerializer
 
     def get_queryset(self):
+        """Фильтрация в соответствии с параметрами запроса."""
         queryset = self.queryset
 
         user = self.request.user
@@ -138,7 +141,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if user.is_anonymous:
             return queryset
 
-        in_shopping_cart = self.request.query_params.get("is_in_shopping_cart")
+        in_shopping_cart = self.request.query_params.get(
+            "is_in_shopping_cart"
+        )
 
         if in_shopping_cart in ["true", "1"]:
             queryset = queryset.filter(shopping_cart_presence__user=user)
@@ -166,7 +171,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         recipe = get_object_or_404(self.queryset, id=pk)
         serializer = self.add_serializer(recipe)
-        in_cart = ShoppingCart.objects.filter(Q(recipe__id=pk) & Q(user=request.user))
+        in_cart = ShoppingCart.objects.filter(
+            Q(recipe__id=pk) & Q(user=request.user)
+        )
 
         if (request.method == "POST") and not in_cart:
             ShoppingCart.objects.create(recipe=recipe, user=request.user)
@@ -191,7 +198,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         recipe = get_object_or_404(self.queryset, id=pk)
         serializer = self.add_serializer(recipe)
-        in_favorite = Favorite.objects.filter(Q(recipe__id=pk) & Q(user=request.user))
+        in_favorite = Favorite.objects.filter(
+            Q(recipe__id=pk) & Q(user=request.user)
+        )
 
         if (request.method == "POST") and not in_favorite:
             Favorite.objects.create(recipe=recipe, user=request.user)
@@ -211,26 +220,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=False,
     )
     def download_shopping_cart(self, request):
-        """description must be here."""
+        """Формирует и возвращает файл со списком ингредиентов и их
+        количеством, необходимым для рецептов в корзине."""
         user = request.user
         if not user.recipe_to_cart.exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         filename = f"{user.username}_shopping_list.txt"
-        shopping_list = [f"Список покупок для:\n\n{user.first_name}\n"]
+        shopping_list = [f"Список покупок пользователя: {user.first_name}\n"]
 
         ingredients = (
-            Ingredient.objects.filter(recipe__shopping_cart_presence__user=user)
-            .values("name", measurement=F("measurement_unit"))
-            .annotate(amount=Sum("ingredientamount__amount"))
+            Ingredient.objects.filter(
+                recipe__shopping_cart_presence__user=user
+            ).values(
+                "name", measurement=F("measurement_unit")
+            ).annotate(
+                amount=Sum("ingredientamount__amount")
+            )
         )
 
         for ing in ingredients:
-            shopping_list.append(f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}')
+            shopping_list.append(
+                f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}'
+            )
 
         shopping_list = "\n".join(shopping_list)
 
-        response = HttpResponse(shopping_list, content_type="text.txt; charset=utf-8")
+        response = HttpResponse(
+            shopping_list,
+            content_type="text.txt; charset=utf-8")
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
         return response
@@ -240,17 +258,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
-        # remove it: return just serializer.data
-        fields = ["text", "tags"]
-        result = {}
-        for key in fields:
-            result[key] = serializer.data[key]
-
         return Response(serializer.data)
 
     def update(self, request, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=True
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 

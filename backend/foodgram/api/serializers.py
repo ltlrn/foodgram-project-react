@@ -6,7 +6,6 @@ from django.core.files.base import ContentFile
 from django.db.models import Q
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from users.models import Subscription
 
 from .models import Ingredient, IngredientAmount, Recipe, Tag
 
@@ -16,10 +15,8 @@ User = get_user_model()
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith("data:image"):
-            print("HERE1")
             format, imgstr = data.split(";base64,")
             extension = format.split("/")[-1]
-            print(extension)
 
             data = ContentFile(base64.b64decode(imgstr), name="temp." + extension)
 
@@ -51,12 +48,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientAmount
         fields = ["id", "amount", "r_name"]
-
-    # def to_representation(self, instance):
-    #     representation = dict()
-    #     representation()
-
-    #     return representation
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -91,7 +82,7 @@ class RecipeGetSerializer(serializers.ModelSerializer):
         ]
 
     def get_is_favorited(self, obj):
-        current_user = self.context.get("view").request.user  # try get('request')
+        current_user = self.context.get("view").request.user
 
         if current_user.is_anonymous:
             return False
@@ -156,11 +147,6 @@ class RecipePostPatchSerializer(serializers.ModelSerializer):
 
         recipe.tags.set(tags_data)
 
-        # ing_ids = [ingredient['id'] for ingredient in ingredients]  # new
-        # ing_queryset = Ingredient.objects.filter(id__in=ing_ids)    # new
-
-        # bulk_create must be below:
-
         for ingredient in ingredients:
 
             current_ingredient = Ingredient.objects.get(id=ingredient["id"])
@@ -186,7 +172,7 @@ class RecipePostPatchSerializer(serializers.ModelSerializer):
                 recipe=instance,
                 ingredient=current_ingredient,
                 amount=ingredient["amount"],
-            )  # delete .save() , by some mistake it was here, need a test
+            )
 
         instance.name = validated_data.get("name", instance.name)
         instance.text = validated_data.get("text", instance.text)

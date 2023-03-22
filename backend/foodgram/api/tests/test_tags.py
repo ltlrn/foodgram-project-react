@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from api.models import Tag
-import datetime
 import logging
 
 

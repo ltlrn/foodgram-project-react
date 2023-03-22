@@ -21,7 +21,9 @@ class Subscription(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["user", "author"], name="unique_followers"),
+            models.UniqueConstraint(
+                fields=["user", "author"],
+                name="unique_followers"),
             models.CheckConstraint(
                 check=~models.Q(author=models.F("user")),
                 name="self subscription denied!",
