@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-
 User = settings.AUTH_USER_MODEL
 
 
@@ -43,7 +42,6 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return self.name
-    
 
 
 class Recipe(models.Model):
@@ -58,38 +56,27 @@ class Recipe(models.Model):
         verbose_name="рецепты пользователя",
     )
 
-    tags = models.ManyToManyField(
-        Tag, 
-        verbose_name="теги",
-        through='RecipeTag'
-    )
+    tags = models.ManyToManyField(Tag, verbose_name="теги")
 
     text = models.TextField("описание")
 
     image = models.ImageField(
-        "картинка",
-        upload_to="api/images/",
-        null=True,
-        blank=True
+        "картинка", upload_to="api/images/", null=True, blank=True
     )
 
     ingredients = models.ManyToManyField(
-        Ingredient, 
-        through='IngredientAmount',
-        through_fields=['recipe', 'ingredient'],
-        verbose_name='ингридиенты'
+        Ingredient,
+        through="IngredientAmount",
+        through_fields=["recipe", "ingredient"],
+        verbose_name="ингридиенты",
     )
 
     cooking_time = models.PositiveIntegerField(
-        "время приготовления", 
+        "время приготовления",
         # validators=[MinValueValidator(1)]
     )
 
-    pub_date = models.DateTimeField(
-        "дата публикации",
-        auto_now_add=True,
-        db_index=True
-    )
+    pub_date = models.DateTimeField("дата публикации", auto_now_add=True, db_index=True)
 
     class Meta:
         verbose_name = "Рецепт"
@@ -99,18 +86,9 @@ class Recipe(models.Model):
         return self.name
 
 
-class RecipeTag(models.Model):
-
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE
-    )
-
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE
-    )
-
+# class RecipeTag(models.Model):
+#     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+#     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
 
 class IngredientAmount(models.Model):
@@ -121,9 +99,13 @@ class IngredientAmount(models.Model):
         on_delete=models.CASCADE,
     )
 
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+    )
 
     amount = models.IntegerField(null=True, default=0)
+
 
 class ShoppingCart(models.Model):
     "Модель корзины покупок."
@@ -146,7 +128,7 @@ class ShoppingCart(models.Model):
 class Favorite(models.Model):
     "Модель избранного."
 
-    recipie = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name="favorite_presence",
@@ -159,5 +141,3 @@ class Favorite(models.Model):
         related_name="recipe_to_favorite",
         verbose_name="добавил рецепт в избранное",
     )
-
-
