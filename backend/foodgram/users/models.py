@@ -21,14 +21,14 @@ class Subscription(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["user", "author"],
-                name="unique_followers"
-            ),
-
+            models.UniqueConstraint(fields=["user", "author"], name="unique_followers"),
             models.CheckConstraint(
-                check=~models.Q(author=models.F('user')),
-                name='self subscription denied!'
-            )
+                check=~models.Q(author=models.F("user")),
+                name="self subscription denied!",
+            ),
         ]
-# подписан на
+
+        verbose_name = "Список избранного"
+
+    def __str__(self):
+        return f"{self.user.username} => {self.author.username}"

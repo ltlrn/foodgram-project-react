@@ -3,20 +3,19 @@ from django.db.models import F, Q, Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import status, viewsets, filters
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import Subscription
 
+from api.permissions import (AdminOrReadOnly, AuthorStaffOrReadOnly,
+                             DjangoModelPermissions)
+
 from .models import (Favorite, Ingredient, IngredientAmount, Recipe,
                      ShoppingCart, Tag)
 from .paginators import PageLimitPagination
-from api.permissions import (AdminOrReadOnly, AuthorStaffOrReadOnly,
-                             DjangoModelPermissions)
-from rest_framework.permissions import IsAuthenticated
-
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeGetSerializer, RecipePostPatchSerializer,
                           RecipeShortSerializer, TagSerializer,
@@ -28,24 +27,26 @@ User = get_user_model()
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [
+        IsAuthenticated,
+    ]
     add_serializer = UserSubscribeSerializer
     http_method_names = ["get", "post", "patch", "delete"]
-    
+
     @action(
-        methods=["get"], 
-        detail=False, 
+        methods=["get"],
+        detail=False,
         permission_classes=[
             IsAuthenticated,
         ],
     )
     def subscriptions(self, request):
-        print('i am here!')
+        print("i am here!")
         if self.request.user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        
+
         users = User.objects.filter(subscribing__user=1)
-        
+
         # pages = self.paginate_queryset(
         #     User.objects.filter(subscribing__user=request.user)
         # )
@@ -82,22 +83,27 @@ class CustomUserViewSet(UserViewSet):
         )  # may be return some error msg
 
 
-
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [AdminOrReadOnly,]
-
+    permission_classes = [
+        AdminOrReadOnly,
+    ]
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = PageNumberPagination
-    permission_classes = [AdminOrReadOnly,]
-    filter_backends = [filters.SearchFilter,]
-    search_fields = ['name',]
-
+    permission_classes = [
+        AdminOrReadOnly,
+    ]
+    filter_backends = [
+        filters.SearchFilter,
+    ]
+    search_fields = [
+        "name",
+    ]
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -105,25 +111,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     permission_classes = (AuthorStaffOrReadOnly,)
     paginaton_class = PageNumberPagination
-    filter_backends = [filters.OrderingFilter,]
-    ordering_fields = ['pub_date']
-    ordering = ('-pub_date',) 
+    filter_backends = [
+        filters.OrderingFilter,
+    ]
+    ordering_fields = ["pub_date"]
+    ordering = ("-pub_date",)
 
     serializer_class = RecipeGetSerializer
     add_serializer = RecipeShortSerializer
 
     def get_queryset(self):
         queryset = self.queryset
-        
+
         user = self.request.user
 
-        tags = self.request.query_params.getlist('tags')
+        tags = self.request.query_params.getlist("tags")
 
         if tags:
-            queryset = queryset.filter(
-                tags__slug__in=tags).distinct()
+            queryset = queryset.filter(tags__slug__in=tags).distinct()
 
-        author = self.request.query_params.get('author')
+        author = self.request.query_params.get("author")
 
         if author:
             queryset = queryset.filter(author=author)
@@ -131,18 +138,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if user.is_anonymous:
             return queryset
 
-        in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        in_shopping_cart = self.request.query_params.get("is_in_shopping_cart")
 
-        if in_shopping_cart in ['true', '1']:
+        if in_shopping_cart in ["true", "1"]:
             queryset = queryset.filter(shopping_cart_presence__user=user)
-        elif in_shopping_cart in ['false', '0']:
+        elif in_shopping_cart in ["false", "0"]:
             queryset = queryset.exclude(shopping_cart_presence__user=user)
 
         in_favorite = self.request.query_params.get("is_favorited")
 
-        if in_favorite in ['true', '1']:
+        if in_favorite in ["true", "1"]:
             queryset = queryset.filter(favorite_presence__user=user)
-        if in_favorite in ['false', '0']:
+        if in_favorite in ["false", "0"]:
             queryset = queryset.exclude(favorite_presence__user=user)
 
         return queryset
