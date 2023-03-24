@@ -82,7 +82,7 @@ class CustomUserViewSet(UserViewSet):
         )
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(viewsets.ModelViewSet):
     """Вьюсет для тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -91,11 +91,10 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     ]
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(viewsets.ModelViewSet):
     """Вьюсет для ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    pagination_class = PageNumberPagination
     permission_classes = [
         AdminOrReadOnly,
     ]

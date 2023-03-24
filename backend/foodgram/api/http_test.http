@@ -2,11 +2,26 @@
 
 @token = Token 0da6072bdd81e0527578f8b5e86214d9aa59e1f7
 
+@user_token = Token 5e40f8dbac5b7c643db1bf4b2b694566ebede581
 
 ### list of tags
 
 GET {{ host }}/api/tags/ HTTP/1.1
 content-type: application/json
+
+### add tags
+
+POST {{ host }}/api/tags/ HTTP/1.1
+content-type: application/json
+Authorization: {{ token }}
+
+
+{
+  "name": "somefast",
+  "color": "#234232",
+  "slug": "smfstoauouoaeuaeuuaouoa"
+}
+
 
 ### tag detail
 
@@ -27,9 +42,7 @@ content-type: application/json
 GET {{ host }}/api/ingredients/279/ HTTP/1.1
 content-type: application/json
 
-
 # USERS
-
 
 ### get/detail users
 
@@ -57,7 +70,7 @@ Authorization: {{ token }}
 
 GET {{host}}/api/users/me/ HTTP/1.1
 content-type: application/json
-Authorization: {{ token }}
+Authorization: {{ user_token }}
 
 ### reg new user
 
@@ -87,8 +100,8 @@ POST {{host}}/api/auth/token/login/ HTTP/1.1
 content-type: application/json
 
 {
-    "email": "au@toma.to",
-    "password": "automata"
+    "email": "mail@oru.ru",
+    "password": "automata5"
 }
 ### user logout
 POST {{host}}/api/auth/token/logout/ HTTP/1.1
