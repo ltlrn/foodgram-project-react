@@ -14,6 +14,7 @@ def add_tags(apps, schema_editor):
         tag_to_add = Tag(**fields)
         tag_to_add.save()
 
+
 def remove_tags(apps, schema_editor):
     Tag = apps.get_model('api', 'Tag')
     for fields in TAGS_TO_DB:
@@ -32,3 +33,4 @@ class Migration(migrations.Migration):
             remove_tags
         )
     ]
+    

@@ -3,7 +3,6 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db.models import Q
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
@@ -13,22 +12,38 @@ User = get_user_model()
 
 
 class Base64ImageField(serializers.ImageField):
+    """Кастомное поле сериализатора для работы с Base64."""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith("data:image"):
             format, imgstr = data.split(";base64,")
             extension = format.split("/")[-1]
 
-            data = ContentFile(base64.b64decode(imgstr), name="temp." + extension)
+            data = ContentFile(
+                base64.b64decode(imgstr), name="temp." + extension
+            )
 
         return super().to_internal_value(data)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
+    """Сериализатор для создания нового пользователя, наследуется от
+    сериализатора из библиотеки djoser."""
+
     class Meta(UserCreateSerializer.Meta):
-        fields = ["email", "id", "first_name", "last_name", "username", "password"]
+        fields = [
+            "email",
+            "id",
+            "first_name",
+            "last_name",
+            "username",
+            "password"
+        ]
 
 
 class CustomUserSerializer(UserSerializer):
+    """Сериализатор для пользователя, наследуется от сериализатора из
+    библиотеки djoser."""
     is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, obj):
@@ -38,10 +53,18 @@ class CustomUserSerializer(UserSerializer):
         return current_user.subscribed_at.filter(author=obj).exists()
 
     class Meta(UserSerializer.Meta):
-        fields = ["email", "id", "first_name", "last_name", "username", "is_subscribed"]
+        fields = [
+            "email",
+            "id",
+            "first_name",
+            "last_name",
+            "username",
+            "is_subscribed"
+        ]
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
+    """Сериализатор модели IngredientAmountSerializer."""
 
     r_name = serializers.CharField(source="recipie.name")
 
@@ -51,18 +74,23 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор модели Tag."""
+
     class Meta:
         model = Tag
         fields = ("id", "name", "color", "slug")
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор модели Ingredient."""
     class Meta:
         model = Ingredient
         fields = ("id", "name", "measurement_unit")
 
 
 class RecipeGetSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения рецептов."""
+
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -113,38 +141,40 @@ class RecipeGetSerializer(serializers.ModelSerializer):
 
 
 class RecipePostPatchSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания и обновления рецепта."""
+
     image = Base64ImageField(required=False, allow_null=True)
     ingredients = IngredientSerializer(many=True, read_only=True)
     tags = TagSerializer(read_only=True, many=True)
 
     class Meta:
         model = Recipe
-        fields = ["id", "ingredients", "tags", "image", "name", "text", "cooking_time"]
+        fields = [
+            "id",
+            "ingredients",
+            "tags",
+            "image",
+            "name",
+            "text",
+            "cooking_time"
+        ]
         read_only_fields = ["id"]
 
     def validate(self, data):
-
         tags = self.initial_data.get("tags")
         ingredients = self.initial_data.get("ingredients")
 
         if not tags or not ingredients:
             raise ValidationError("Недостаточно данных.")
 
-        # tags_exist_validator(tags, Tag)
-        # ingredients = ingredients_exist_validator(ingredients, Ingredient)
-
         data.update({"tags": tags, "ingredients": ingredients})
 
         return data
 
     def create(self, validated_data):
-
         ingredients = validated_data.pop("ingredients", [])
-
         tags_data = validated_data.pop("tags", [])
-
         recipe = Recipe.objects.create(**validated_data)
-
         recipe.tags.set(tags_data)
 
         for ingredient in ingredients:
@@ -159,7 +189,6 @@ class RecipePostPatchSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-
         ingredients_data = validated_data.pop("ingredients", [])
         tags_data = validated_data.pop("tags", [])
 
@@ -186,7 +215,7 @@ class RecipePostPatchSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-    """Some description here."""
+    """Сериализатор для вывода некоторых полей рецепта."""
 
     class Meta:
         model = Recipe
@@ -197,6 +226,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class UserSubscribeSerializer(serializers.ModelSerializer):
+    """Сериализатор для механизма подписок."""
     recipes = RecipeShortSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()

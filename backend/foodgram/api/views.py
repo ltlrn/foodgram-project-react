@@ -12,8 +12,7 @@ from users.models import Subscription
 
 from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 
-from .models import (Favorite, Ingredient, Recipe,
-                     ShoppingCart, Tag)
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeGetSerializer, RecipePostPatchSerializer,
                           RecipeShortSerializer, TagSerializer,
@@ -68,6 +67,11 @@ class CustomUserViewSet(UserViewSet):
             Q(author=author) & Q(user=request.user)
         )
 
+        if (request.method == 'POST') and (author == request.user):
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if (request.method == "POST") and not subscription:
             Subscription.objects.create(author=author, user=request.user)
 
@@ -95,26 +99,18 @@ class IngredientViewSet(viewsets.ModelViewSet):
     """Вьюсет для ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [
-        AdminOrReadOnly,
-    ]
-    filter_backends = [
-        filters.SearchFilter,
-    ]
-    search_fields = [
-        "name",
-    ]
+    permission_classes = [AdminOrReadOnly,]
+    filter_backends = [filters.SearchFilter,]
+    search_fields = ["name",]
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов."""
     queryset = Recipe.objects.all()
     http_method_names = ["get", "post", "patch", "delete"]
-    permission_classes = (AuthorStaffOrReadOnly,)
+    permission_classes = [AuthorStaffOrReadOnly,]
     paginaton_class = PageNumberPagination
-    filter_backends = [
-        filters.OrderingFilter,
-    ]
+    filter_backends = [filters.OrderingFilter,]
     ordering_fields = ["pub_date"]
     ordering = ("-pub_date",)
 
@@ -124,9 +120,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Фильтрация в соответствии с параметрами запроса."""
         queryset = self.queryset
-
         user = self.request.user
-
         tags = self.request.query_params.getlist("tags")
 
         if tags:
@@ -146,6 +140,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if in_shopping_cart in ["true", "1"]:
             queryset = queryset.filter(shopping_cart_presence__user=user)
+
         elif in_shopping_cart in ["false", "0"]:
             queryset = queryset.exclude(shopping_cart_presence__user=user)
 
@@ -153,6 +148,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if in_favorite in ["true", "1"]:
             queryset = queryset.filter(favorite_presence__user=user)
+
         if in_favorite in ["false", "0"]:
             queryset = queryset.exclude(favorite_presence__user=user)
 
@@ -161,9 +157,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=["GET", "POST", "DELETE"],
         detail=True,
-        permission_classes=[
-            IsAuthenticated,
-        ],
+        permission_classes=[IsAuthenticated,],
     )
     def shopping_cart(self, request, pk):
         """Добавляет/удалет рецепт в `список покупок`."""
@@ -188,9 +182,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST", "DELETE"],
         detail=True,
-        permission_classes=[
-            IsAuthenticated,
-        ],
+        permission_classes=[IsAuthenticated,],
     )
     def favorite(self, request, pk):
         """Добавляет/удалет рецепт в `избранное`."""
@@ -213,9 +205,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        methods=[
-            "GET",
-        ],
+        methods=["GET",],
         detail=False,
     )
     def download_shopping_cart(self, request):
@@ -257,7 +247,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, **kwargs):
         instance = self.get_object()
@@ -269,7 +259,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

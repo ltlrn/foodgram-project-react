@@ -2,13 +2,12 @@ import json
 
 from django.db import migrations
 
-
 with open("./data/ingredients.json", encoding="utf-8") as file:
     INGREDIENTS = json.load(file)
 
+
 def add_ingredients(apps, schema_editor):
     Ingredient = apps.get_model("api", "Ingredient")
-
 
     for fields in INGREDIENTS:
         new_ingredient = Ingredient(**fields)
@@ -34,3 +33,4 @@ class Migration(migrations.Migration):
             remove_ingredients
         ),
     ]
+    
