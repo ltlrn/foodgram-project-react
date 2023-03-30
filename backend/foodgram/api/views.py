@@ -12,6 +12,7 @@ from users.models import Subscription
 
 from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 
+from .mixins import RecipeActionsMixin
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeGetSerializer, RecipePostPatchSerializer,
@@ -104,7 +105,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     search_fields = ["name",]
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(viewsets.ModelViewSet, RecipeActionsMixin):
     """Вьюсет для рецептов."""
     queryset = Recipe.objects.all()
     http_method_names = ["get", "post", "patch", "delete"]
@@ -162,22 +163,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         """Добавляет/удалет рецепт в `список покупок`."""
 
-        recipe = get_object_or_404(self.queryset, id=pk)
-        serializer = self.add_serializer(recipe)
-        in_cart = ShoppingCart.objects.filter(
-            Q(recipe__id=pk) & Q(user=request.user)
-        )
-
-        if (request.method == "POST") and not in_cart:
-            ShoppingCart.objects.create(recipe=recipe, user=request.user)
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if (request.method == "DELETE") and in_cart:
-            in_cart[0].delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.action_function(request, ShoppingCart, pk)
 
     @action(
         methods=["POST", "DELETE"],
@@ -187,22 +173,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk):
         """Добавляет/удалет рецепт в `избранное`."""
 
-        recipe = get_object_or_404(self.queryset, id=pk)
-        serializer = self.add_serializer(recipe)
-        in_favorite = Favorite.objects.filter(
-            Q(recipe__id=pk) & Q(user=request.user)
-        )
-
-        if (request.method == "POST") and not in_favorite:
-            Favorite.objects.create(recipe=recipe, user=request.user)
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if (request.method == "DELETE") and in_favorite:
-            in_favorite[0].delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.action_function(request, Favorite, pk)
 
     @action(
         methods=["GET",],
