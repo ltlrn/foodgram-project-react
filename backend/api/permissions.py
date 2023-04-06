@@ -42,4 +42,3 @@ class AdminOrReadOnly(BasePermission):
                 and request.user.is_staff
             )
         )
-    

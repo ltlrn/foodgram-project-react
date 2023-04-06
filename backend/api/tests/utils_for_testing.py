@@ -46,7 +46,7 @@ TEST_USERS_DATA = {
 }
 
 URL_DATA = [
-    {"locator": "users/", "get": "auth", "post": "anon"},
+    {"locator": "users/", "get": "anon", "post": "anon"},
     {"locator": "recipes/", "get": "anon", "post": "auth"},
     {"locator": "recipes/1/", "get": "anon", "patch": "me", "delete": "me"},
     {"locator": "users/me/", "get": "auth"},

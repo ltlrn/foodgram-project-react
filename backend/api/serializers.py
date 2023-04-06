@@ -96,13 +96,14 @@ class RecipeGetSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(required=False, allow_null=True)
     author = CustomUserSerializer(read_only=True)
+    tags = TagSerializer(read_only=True, many=True)
 
     def get_ingredients(self, obj):
         amount_may_be = obj.ingredientamount_set.all()
         return [
             {
                 "id": ing.ingredient.id,
-                "ingredient": ing.ingredient.name,
+                "name": ing.ingredient.name,
                 "measurement_unit": ing.ingredient.measurement_unit,
                 "amount": ing.amount,
             }
@@ -227,9 +228,23 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 class UserSubscribeSerializer(serializers.ModelSerializer):
     """Сериализатор для механизма подписок."""
-    recipes = RecipeShortSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        queryset = Recipe.objects.filter(author=obj.id)
+
+        if request.GET.get('recipes_limit'):
+            limit = int(request.GET.get('recipes_limit'))
+            queryset = queryset[:limit]
+
+        serializer = RecipeShortSerializer(
+            queryset, many=True, read_only=True
+        )
+
+        return serializer.data
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()

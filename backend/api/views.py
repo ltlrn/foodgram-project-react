@@ -5,11 +5,11 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import Subscription
 
+from api.pagination import CustomPagination
 from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 
 from .mixins import RecipeActionsMixin
@@ -18,6 +18,7 @@ from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeGetSerializer, RecipePostPatchSerializer,
                           RecipeShortSerializer, TagSerializer,
                           UserSubscribeSerializer)
+from .utils import IngredientSearch
 
 User = get_user_model()
 
@@ -27,10 +28,7 @@ class CustomUserViewSet(UserViewSet):
     по умолчанию из библиотеки djoser."""
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [
-        IsAuthenticated,
-    ]
-    paginaton_class = PageNumberPagination
+    paginaton_class = CustomPagination
     add_serializer = UserSubscribeSerializer
     http_method_names = ["get", "post", "patch", "delete"]
 
@@ -49,8 +47,15 @@ class CustomUserViewSet(UserViewSet):
 
         users = User.objects.filter(subscribing__user=request.user)
 
-        serializer = UserSubscribeSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        pages = self.paginate_queryset(users)
+
+        serializer = UserSubscribeSerializer(
+            pages,
+            context={'request': request},
+            many=True
+        )
+
+        return self.get_paginated_response(serializer.data)
 
     @action(
         methods=["POST", "DELETE"],
@@ -63,7 +68,10 @@ class CustomUserViewSet(UserViewSet):
         """Механизм подписки на автора рецепта и отписки
         от него."""
         author = get_object_or_404(self.queryset, id=id)
-        serializer = self.add_serializer(author)
+        serializer = self.add_serializer(
+            author,
+            context={'request': request}
+        )
         subscription = Subscription.objects.filter(
             Q(author=author) & Q(user=request.user)
         )
@@ -101,7 +109,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AdminOrReadOnly,]
-    filter_backends = [filters.SearchFilter,]
+    filter_backends = [IngredientSearch,]
     search_fields = ["name",]
 
 
@@ -110,7 +118,7 @@ class RecipeViewSet(viewsets.ModelViewSet, RecipeActionsMixin):
     queryset = Recipe.objects.all()
     http_method_names = ["get", "post", "patch", "delete"]
     permission_classes = [AuthorStaffOrReadOnly,]
-    paginaton_class = PageNumberPagination
+    paginaton_class = CustomPagination
     filter_backends = [filters.OrderingFilter,]
     ordering_fields = ["pub_date"]
     ordering = ("-pub_date",)
