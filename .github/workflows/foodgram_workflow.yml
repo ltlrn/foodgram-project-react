@@ -7,6 +7,19 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
+          
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -26,15 +39,20 @@ jobs:
           pip install -r backend/requirements.txt
 
       - name: Test with flake8 and Django tests
-        env: 
-          DB: postgres
-          DB_USER: postgres
-          DB_PASSWORD: password
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
+        # env: 
+        #  DB: postgres
+        #  DB_USER: postgres
+        #  DB_PASSWORD: password
+        #  DB_HOST: 127.0.0.1
+        #  DB_PORT: 5432
+        
+        # uses: harmon758/postgresql-action@v1
+        # with:
+        #  postgresql version: '11'
 
         run: |
           python -m flake8
           cd ./backend/
+          python manage.py migrate
           python manage.py test
 
