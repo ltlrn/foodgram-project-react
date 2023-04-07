@@ -14,6 +14,11 @@ jobs:
 
         with:
           python-version: 3.8
+      
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres createuser -s postgres
 
       - name: Install dependencies
         run: |
@@ -22,8 +27,13 @@ jobs:
           pip install -r backend/requirements.txt
 
       - name: Test with flake8 and Django tests
+        env: 
+          DB: postgres
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+
         run: |
           python -m flake8
-          # cd ./backend/
-          # python manage.py test
+          cd ./backend/
+          python manage.py test
 

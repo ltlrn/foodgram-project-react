@@ -86,7 +86,7 @@ class SubscriptionTests(APITestCase):
         """
 
         url = f"{HOST}users/2/subscribe/"
-        url_2 = f"{HOST}users/subscriptions/"
+        url_2 = f"{HOST}users/subscriptions/?page=1&limit=6&recipes_limit=3"
 
         self.authorized_client.post(url, format="json")
 
