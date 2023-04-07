@@ -54,5 +54,5 @@ jobs:
           python -m flake8
           cd ./backend/
           python manage.py migrate
-          python manage.py test
+          python manage.py test -v 2
 
