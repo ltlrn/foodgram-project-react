@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+./backend/Dockerfile
+
 # C extensions
 *.so
 
