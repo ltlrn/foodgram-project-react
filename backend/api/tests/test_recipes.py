@@ -101,7 +101,7 @@ class RecipeTests(APITestCase):
         пользователем.
         """
 
-        url = f"{HOST}recipes/1/"
+        url = f"{HOST}recipes/{RecipeTests.recipe.id}/"
         patch_data = {
             "name": "pelmenii",
             "text": "some",
@@ -129,7 +129,7 @@ class RecipeTests(APITestCase):
 
         records = ShoppingCart.objects.all().count()
 
-        url = f"{HOST}recipes/1/shopping_cart/"
+        url = f"{HOST}recipes/{RecipeTests.recipe.id}/shopping_cart/"
 
         response = self.authorized_client_2.post(url, format="json")
         records += 1
@@ -150,7 +150,7 @@ class RecipeTests(APITestCase):
 
         records = ShoppingCart.objects.all().count()
 
-        url = f"{HOST}recipes/1/favorite/"
+        url = f"{HOST}recipes/{RecipeTests.recipe.id}/favorite/"
 
         response = self.authorized_client_2.post(url, format="json")
         records += 1
@@ -169,7 +169,7 @@ class RecipeTests(APITestCase):
     def test_download_shopping_cart(self):
         """Скачивание списка покупок."""
 
-        url_1 = f"{HOST}recipes/1/shopping_cart/"
+        url_1 = f"{HOST}recipes/{RecipeTests.recipe.id}/shopping_cart/"
         url_2 = f"{HOST}recipes/download_shopping_cart/"
 
         self.authorized_client_2.post(url_1, format="json")

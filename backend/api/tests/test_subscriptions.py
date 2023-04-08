@@ -56,7 +56,7 @@ class SubscriptionTests(APITestCase):
     def test_subscribe_action(self):
         """Подписка на пользователя, попытка повторной подписки. Отписка."""
 
-        url = f"{HOST}users/2/subscribe/"
+        url = f"{HOST}users/{SubscriptionTests.user_2.id}/subscribe/"
         records = Subscription.objects.all().count()
         response = self.authorized_client.post(url, format="json")
 
@@ -85,7 +85,7 @@ class SubscriptionTests(APITestCase):
         пользователем.
         """
 
-        url = f"{HOST}users/2/subscribe/"
+        url = f"{HOST}users/{SubscriptionTests.user_2.id}/subscribe/"
         url_2 = f"{HOST}users/subscriptions/?page=1&limit=6&recipes_limit=3"
 
         self.authorized_client.post(url, format="json")
@@ -101,7 +101,7 @@ class SubscriptionTests(APITestCase):
     def test_try_to_subscribe_on_yourself(self):
         """Попытка подписаться на самого себя."""
 
-        url = f"{HOST}users/1/subscribe/"
+        url = f"{HOST}users/{SubscriptionTests.user.id}/subscribe/"
 
         response = self.authorized_client.post(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
