@@ -35,6 +35,13 @@ TEST_USERS_DATA = {
         "last_name": "Smith",
         "password": "qwerty123457",
     },
+    "user_3": {
+        "username": "mockuser_3",
+        "email": "LoWeRcase@mail.ru",
+        "first_name": "John",
+        "last_name": "Smith",
+        "password": "qwerty7987979",
+    },
     "admin": {
         "username": "mockadmin",
         "email": "mock3@mail.ru",

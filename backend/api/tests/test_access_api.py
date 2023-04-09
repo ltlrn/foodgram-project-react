@@ -1,19 +1,13 @@
-from api.models import Ingredient, IngredientAmount, Recipe
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient, APITestCase
 
-from .utils_for_testing import (
-    IMAGE,
-    ING_DATA,
-    TAG_DATA,
-    TEST_USERS_DATA,
-    URL_LOGIN,
-    URL_POOL,
-    login_and_get_token,
-    url_filter,
-)
+from api.models import Ingredient, IngredientAmount, Recipe
+
+from .utils_for_testing import (IMAGE, ING_DATA, TAG_DATA, TEST_USERS_DATA,
+                                URL_LOGIN, URL_POOL, login_and_get_token,
+                                url_filter)
 
 """
 Эндпоинты, доступные анонимным пользователям:

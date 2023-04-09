@@ -9,4 +9,4 @@ class IngredientSearch(filters.SearchFilter):
 
     class Meta:
         model = Ingredient
-        fields = ['name',]
+        fields = ['=name',]

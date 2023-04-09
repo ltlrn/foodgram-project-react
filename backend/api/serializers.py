@@ -3,12 +3,20 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from djoser.serializers import UserCreateSerializer, UserSerializer
+from djoser.serializers import (TokenCreateSerializer, UserCreateSerializer,
+                                UserSerializer)
 from rest_framework import serializers
 
 from .models import Ingredient, IngredientAmount, Recipe, Tag
 
 User = get_user_model()
+
+
+class LoginSerializer(TokenCreateSerializer):
+    def validate(self, attrs):
+        attrs["email"] = attrs["email"].lower()
+
+        return super(LoginSerializer, self).validate(attrs)
 
 
 class Base64ImageField(serializers.ImageField):
@@ -39,6 +47,13 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             "username",
             "password"
         ]
+
+    def validate(self, data):
+        email = self.initial_data.get("email").lower()
+
+        data['email'] = email
+
+        return data
 
 
 class CustomUserSerializer(UserSerializer):

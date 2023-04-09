@@ -1,23 +1,13 @@
-from api.models import (
-    Favorite,
-    Ingredient,
-    IngredientAmount,
-    Recipe,
-    ShoppingCart
-)
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient, APITestCase
 
-from .utils_for_testing import (
-    HOST,
-    IMAGE,
-    REC_DATA,
-    TEST_USERS_DATA,
-    URL_LOGIN,
-    login_and_get_token,
-)
+from api.models import (Favorite, Ingredient, IngredientAmount, Recipe,
+                        ShoppingCart)
+
+from .utils_for_testing import (HOST, IMAGE, REC_DATA, TEST_USERS_DATA,
+                                URL_LOGIN, login_and_get_token)
 
 User = get_user_model()
 

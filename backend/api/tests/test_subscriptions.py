@@ -2,14 +2,11 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient, APITestCase
+
 from users.models import Subscription
 
-from .utils_for_testing import (
-    HOST,
-    TEST_USERS_DATA,
-    URL_LOGIN,
-    login_and_get_token
-)
+from .utils_for_testing import (HOST, TEST_USERS_DATA, URL_LOGIN,
+                                login_and_get_token)
 
 User = get_user_model()
 
@@ -105,3 +102,31 @@ class SubscriptionTests(APITestCase):
 
         response = self.authorized_client.post(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_email_field_case_insencitive_registration(self):
+        """Проверка регистронезависимости email при регистрации."""
+
+        proper_email_to_db = TEST_USERS_DATA["user_3"].get('email').lower()
+
+        url = f"{HOST}users/"
+        response = self.client.post(
+            url, format="json", data=TEST_USERS_DATA["user_3"]
+        )
+        created_user = User.objects.get(username="mockuser_3")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(created_user.email, proper_email_to_db)
+
+    def test_email_case_insencitive_login(self):
+        """Проверка регистронезависимости email при входе."""
+
+        url = f"{HOST}auth/token/login"
+        log_pass = {
+            "email": "mOcK@mail.ru",
+            "password": "unbreakable"
+        }
+
+        self.new_cliet = APIClient()
+        response = self.new_cliet.post(url, format="json", data=log_pass)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
