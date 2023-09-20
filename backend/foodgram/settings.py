@@ -12,7 +12,7 @@ ALLOWED_HOSTS = [
     "http://yabezbulochkium.ru",
     "https://yabezbulochkium.ru",
     "localhost"
-    ]
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
