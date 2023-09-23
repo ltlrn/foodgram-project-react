@@ -53,7 +53,10 @@ CORS_ORIGIN_WHITELIST = [
     "yabezbulochkium.ru",
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://yabezbulochkium.ru/']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.yabezbulochkium.ru',
+    'http://*.yabezbulochkium.ru'
+]
 CORS_REPLACE_HTTPS_REFERER = True
 CSRF_COOKIE_DOMAIN = 'yabezbulochkium.ru'
 
