@@ -48,7 +48,15 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:80',
     'http://127.0.0.1:80',
     "http://127.0.0.1:8000",
-    "http://localhost:8000",]
+    "http://localhost:8000",
+    "https://yabezbulochkium.ru",
+    "yabezbulochkium.ru",
+]
+
+CSRF_TRUSTED_ORIGINS = ['https://yabezbulochkium.ru/']
+CORS_REPLACE_HTTPS_REFERER = True
+CSRF_COOKIE_DOMAIN = 'yabezbulochkium.ru'
+
 
 TEMPLATES = [
     {
