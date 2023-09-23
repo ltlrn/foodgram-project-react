@@ -11,7 +11,8 @@ ALLOWED_HOSTS = [
     "176.222.52.155",
     "http://yabezbulochkium.ru",
     "https://yabezbulochkium.ru",
-    "localhost"
+    "localhost",
+    "*",
 ]
 
 INSTALLED_APPS = [
