@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import Subscription
+from django.shortcuts import render
 
 from api.pagination import CustomPagination
 from api.permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
@@ -247,3 +248,7 @@ class RecipeViewSet(viewsets.ModelViewSet, RecipeActionsMixin):
             return RecipeGetSerializer
         elif self.request.method == "POST" or "PATCH":
             return RecipePostPatchSerializer
+
+
+def index(request):
+    return render(request, 'index.html', {})

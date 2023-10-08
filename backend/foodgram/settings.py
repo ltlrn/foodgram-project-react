@@ -1,11 +1,21 @@
 import os
 from pathlib import Path
 
+import environ
+
+env = environ.Env(
+    SECRET_KEY=str,
+    DEBUG=(str, False),
+)
+
+environ.Env.read_env()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-@1chb#e$dqbssf!#+%_u=9r70^la+r=g5qh(isls%#zbn-0b4#"
+SECRET_KEY = env("SECRET_KEY")
 
-DEBUG = False
+DEBUG = env("DEBUG")
+print("DEUGISHERE!!!!", DEBUG)
 
 ALLOWED_HOSTS = [
     "176.222.52.155",
@@ -55,10 +65,13 @@ CORS_ORIGIN_WHITELIST = [
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.yabezbulochkium.ru',
-    'http://*.yabezbulochkium.ru'
+    'http://*.yabezbulochkium.ru',
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
 ]
 CORS_REPLACE_HTTPS_REFERER = True
-CSRF_COOKIE_DOMAIN = 'yabezbulochkium.ru'
+CSRF_COOKIE_DOMAIN = 'localhost' # changed, put in .env
+CSRF_COOKIE_SECURE = True
 
 
 TEMPLATES = [
@@ -83,17 +96,24 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', default='github_actions'),
-        'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', default='5432')
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': os.getenv('DB_NAME', default='github_actions'),
+            'USER': os.getenv('POSTGRES_USER', default='postgres'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+            'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
+            'PORT': os.getenv('DB_PORT', default='5432')
+        }
+    }
 
 
 # Password validation
